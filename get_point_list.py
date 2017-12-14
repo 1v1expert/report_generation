@@ -3,18 +3,23 @@ import datetime
 import json
 import time
 
-#import requests
-#import xml.etree.ElementTree as etree
-#getPointList
-#getOrderListDelivery
-
 def get_secur(param):
 	puth = 'conf.conf'
-	f = open(puth):
-		print(f)
-	if param == 1: 
-
-
+	f = open(puth)
+	securs = f.read()
+	f.close()
+	partnerCode_num = securs.find('partnerCode')
+	clientKey_num = securs.find('clientKey')
+	authorization_num = securs.find('authorization')
+	partnerCode = securs[partnerCode_num + 14:clientKey_num-1]
+	clientKey = securs[clientKey_num+12:authorization_num -1]
+	authorization = securs[authorization_num+16:]
+	print(partnerCode)
+	print(clientKey)
+	print(authorization)
+	if param == "pc": return partnerCode
+	if param == "ck": return clientKey
+	if param == "au": return authorization  
 
 
 def get_information(payload):
@@ -57,7 +62,7 @@ def find_strings(data):
 		pointCode_end = data.find('</pointCode>')
 		print(data[station_n_begin + 12: station_n_end])
 		print('Pochtomat #', data[pointCode_beg + 11: pointCode_end])
-		payload_beg = '<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://dpd.ru/ws/partnership/2015-03-20\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:getOrderListDelivery>\n         <!--Optional:-->\n         <request>\n            <auth>\n               <partnerCode></partnerCode>\n               <clientKey></clientKey>\n            </auth>\n            <stationNum>'
+		payload_beg = '<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://dpd.ru/ws/partnership/2015-03-20\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:getOrderListDelivery>\n         <!--Optional:-->\n         <request>\n            <auth>\n               <partnerCode>'+ get_secur('pc') + '</partnerCode>\n               <clientKey>' + get_secur('ck') + '</clientKey>\n            </auth>\n            <stationNum>'
 		payload_cent = data[station_n_begin + 12: station_n_end]
 		payload_end = '</stationNum>\n         </request>\n      </ns:getOrderListDelivery>\n   </soapenv:Body>\n</soapenv:Envelope>'
 		payload_all = payload_beg + payload_cent + payload_end
@@ -87,36 +92,14 @@ def find_consignor(data, stationNums, pointCode):
 		value = {}
 		if dpdOrderNum != -1:
 			value_dpdOrderNum = data[dpdOrderNum+13:dpdOrderNum_e]
-			#OrderNum = data[dpdOrderNum+13:dpdOrderNum_e]
 			print('dpdOrderNum = ', value_dpdOrderNum)
 			value_header = {value_dpdOrderNum: {}}
-			#value.update([('stationNums', stationNums)])
-			#value.update([('pointCode', pointCode)])
-			#value.update([('Time', get_time(False))])
-			#value.update([('Date', get_time(True))])
-			#value_header[value_dpdOrderNum].update([('stationNums', stationNums)])
-			#value_header[value_dpdOrderNum].update([('pointCode', pointCode)])
-			#value_header[value_dpdOrderNum].update([('Time', get_time(False))])
-			#value_header[value_dpdOrderNum].update([('Date', get_time(True))])
-			#value_header[stationNums].update([('dpdOrderNum:', data[dpdOrderNum+13:dpdOrderNum_e])])
-			#value_dpdOrderNum.update([('dpdOrderNum:', data[dpdOrderNum+13:dpdOrderNum_e])])
-
 			if parcelNum != -1:
 				print('parcelNum = ', data[parcelNum+11:parcelNum_e])
 				ParcelNum = data[parcelNum+11:parcelNum_e]
-				#value.update([('parcelNum:', data[parcelNum+11:parcelNum_e])])
-
-				#value_header[value_dpdOrderNum].update([('parcelNum:', data[parcelNum+11:parcelNum_e])])
-				#value_parcelNum.update([('parcelNum:', data[parcelNum+11:parcelNum_e])])
 				if consignor != -1:
 					print('consignor = ', data[consignor+11:consignor_e])
 					consignors = data[consignor+11:consignor_e]
-					#value.update([('consignor', data[consignor+11:consignor_e])])
-					#value_header[value_dpdOrderNum].update([('consignor', data[consignor+11:consignor_e])])
-					#value_consignor.update([('consignor', data[consignor+11:consignor_e])])
-		#value_header.update([(stationNums, value_dpdOrderNum)])
-		#value_header.update([(stationNums, value_parcelNum)])
-		#value_header.update([(stationNums, value_consignor)])
 			value = {
 			'dpd_order': value_dpdOrderNum,
 			'parcelNum:': ParcelNum, 
@@ -287,7 +270,7 @@ def add_dop(issued_time, issued_date, delivered_time, delivered_date, delivering
 		fileq.close()
 
 if __name__=='__main__':
-	payload = "<?xml version='1.0' encoding='UTF-8'?>\n\n\t<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://dpd.ru/ws/partnership/2015-03-20\">\n\t<soapenv:Header>\n\n    </soapenv:Header>\n   <soapenv:Body>\n      <ns:getPointList>\n        <auth>\n           <partnerCode></partnerCode>\n           <clientKey></clientKey>\n        </auth>\n      </ns:getPointList>\n      <return>\n\n      </return>\n   </soapenv:Body>\n</soapenv:Envelope>"
+	payload = "<?xml version='1.0' encoding='UTF-8'?>\n\n\t<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://dpd.ru/ws/partnership/2015-03-20\">\n\t<soapenv:Header>\n\n    </soapenv:Header>\n   <soapenv:Body>\n      <ns:getPointList>\n        <auth>\n           <partnerCode>"+get_secur('pc') + " </partnerCode>\n           <clientKey>"+get_secur('ck')+"</clientKey>\n        </auth>\n      </ns:getPointList>\n      <return>\n\n      </return>\n   </soapenv:Body>\n</soapenv:Envelope>"
 	find_strings(get_information(payload))
 	#get_parcel_pulse()
 
