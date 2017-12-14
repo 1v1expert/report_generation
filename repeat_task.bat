@@ -1,0 +1,1 @@
+python get_point_list.py
