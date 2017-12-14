@@ -7,6 +7,16 @@ import time
 #import xml.etree.ElementTree as etree
 #getPointList
 #getOrderListDelivery
+
+def get_secur(param):
+	puth = 'conf.conf'
+	f = open(puth):
+		print(f)
+	if param == 1: 
+
+
+
+
 def get_information(payload):
 	conn = http.client.HTTPConnection("ws.dpd.ru:80")
 	headers = {
