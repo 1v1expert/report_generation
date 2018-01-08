@@ -130,5 +130,3 @@ if __name__ == '__main__':
 	#get_point_list.get_parcel_pulse()
 	load_file()
 	import_xls.load_data()
-
-#'Поддержка т. 2134532'
